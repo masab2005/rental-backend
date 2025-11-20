@@ -9,6 +9,7 @@ import createStaffTable from './data/createStaffTable.js';
 import createCustomerTable from './data/createCustomerTable.js';
 import createCarsTable from './data/createCarsTable.js';
 import carRoutes from './routes/carRoutes.js';
+import maintenanceRoutes from './routes/maintenanceRoutes.js';
 import createMaintenanceTable from './data/createMaintenanceTable.js';
 dotenv.config();
 const app = express();
@@ -20,6 +21,8 @@ app.use(cors());
 //routes
 app.use('/user', userRoutes);
 app.use('/car', carRoutes);
+app.use('/api', maintenanceRoutes);
+
 app.use(errorHandling);
 
 app.get('/', async(req, res) => {

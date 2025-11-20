@@ -1,9 +1,14 @@
 import { 
     createUserAndProfileService, 
     getUserByNameService,
+    getAllUsersService,
+    getUserByIdService,
+    updateUserService,    
+    deleteUserService
 } from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+
 const handerResponse = (res,status, message, data = null) => {
     res.status(status).json({
         status,
@@ -113,19 +118,35 @@ export const getUserById = async(req, res, next) => {
         next(error);
     }       
 }
-export const updateUser = async(req, res, next) => {
+export const updateUser = async (req, res, next) => {
     const { id } = req.params;
-    const { name, email } = req.body;
+    const { username, password} = req.body;
+
     try {
-        const updatedUser = await updateUserService(id, name, email);
+
+        // Build fields object
+        const fields = { username, password};
+
+        // Remove undefined values
+        Object.keys(fields).forEach(key => {
+            if (fields[key] === undefined || fields[key] === "") {
+                delete fields[key];
+            }
+        });
+
+        const updatedUser = await updateUserService(id, fields);
+
         if (!updatedUser) {
-            return handerResponse(res, 404, 'User not found');
+            return handerResponse(res, 404, "User not found");
         }
-        handerResponse(res, 200, 'User updated successfully', updatedUser);
+
+        return handerResponse(res, 200, "User updated successfully", updatedUser);
+
     } catch (error) {
         next(error);
-    }   
-}
+    }
+};
+
 export const deleteUser = async(req, res, next) => {
     const { id } = req.params;
     try {
