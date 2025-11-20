@@ -1,12 +1,9 @@
 import { 
     createUserAndProfileService, 
-    getAllUsersService,
-    getUserByIdService,
-    updateUserService,
-    deleteUserService
+    getUserByNameService,
 } from '../models/userModel.js';
-
-
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 const handerResponse = (res,status, message, data = null) => {
     res.status(status).json({
         status,
@@ -60,6 +57,40 @@ export const createUser = async (req, res, next) => {
   }
 };
 
+export const loginUser = async (req,res,next) => {
+    const { username, password, role } = req.body;
+
+  try {
+    const user = await getUserByNameService(username,role);
+
+    if (!user) {
+      return res.status(400).json({ error: "Invalid username or password" });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid username or password" });
+    }
+
+ 
+    const token = jwt.sign(
+      {
+        id: user.userid,
+        username: user.username,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES }
+    );
+
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      role: user.role
+    });
+  } catch (err) {
+    next(err);
+  }
+}
 export const getAllUsers = async(req, res, next) => {
     try {
         const users = await getAllUsersService();

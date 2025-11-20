@@ -1,6 +1,8 @@
 import express from 'express';
+import { auth } from '../middlewares/auth.js';
 import {
     createUser,
+    loginUser,
     getAllUsers,
     getUserById,
     updateUser,
@@ -8,7 +10,8 @@ import {
 } from '../controllers/userController.js';
 const router = express.Router();
 
-router.post('/users',createUser);
+router.post('/register',createUser);
+router.post('/login',loginUser)
 router.get('/users',getAllUsers);
 router.get('/users/:id',getUserById); 
 router.put('/users/:id',updateUser);

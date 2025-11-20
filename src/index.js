@@ -7,7 +7,9 @@ import errorHandling from './middlewares/errorHandler.js';
 import createUserTable from './data/createUserTable.js';
 import createStaffTable from './data/createStaffTable.js';
 import createCustomerTable from './data/createCustomerTable.js';
-
+import createCarsTable from './data/createCarsTable.js';
+import carRoutes from './routes/carRoutes.js';
+import createMaintenanceTable from './data/createMaintenanceTable.js';
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,7 +18,8 @@ app.use(cors());
 
 
 //routes
-app.use('/api', userRoutes);
+app.use('/user', userRoutes);
+app.use('/car', carRoutes);
 app.use(errorHandling);
 
 app.get('/', async(req, res) => {
@@ -24,19 +27,11 @@ app.get('/', async(req, res) => {
   res.send(`Connected to database: ${result.rows[0].current_database}`);
 });
 
-// app.delete('/delete-users-table', async (req, res) => {
-//   try {
-//     await pool.query('DROP TABLE IF EXISTS users');
-//     res.send('Users table deleted successfully.');
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send('Error deleting users table.');
-//   }
-// });
-
 createUserTable();
 createStaffTable();
 createCustomerTable();
+createMaintenanceTable();
+createCarsTable();
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
