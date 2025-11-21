@@ -9,6 +9,7 @@ import {
 } from '../controllers/maintenanceController.js';
 import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 
+
 const router = express.Router();
 
 router.get('/maintenance', auth, authorizeRoles('staff', 'admin'), fetchAllMaintenance);

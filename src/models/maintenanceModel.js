@@ -1,32 +1,32 @@
 import pool from '../config/db.js';
 
 export const getAllMaintenance = async () => {
-  const result = await pool.query('SELECT * FROM maintenance');
+  const result = await pool.query('SELECT * FROM maintenance ORDER BY maintenancedate DESC');
   return result.rows;
 };
 
 export const getMaintenanceById = async (id) => {
-  const result = await pool.query('SELECT * FROM maintenance WHERE maintenanceId = $1', [id]);
+  const result = await pool.query('SELECT * FROM maintenance WHERE maintenanceid = $1', [id]);
   return result.rows[0];
 };
 
-export const createMaintenanceWithCarLink = async (carId, { maintenanceDate, maintenanceType, maintenanceCost }) => {
+export const createMaintenanceWithCarLink = async (carid, { maintenancedate, maintenancetype, maintenancecost }) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
     const insertResult = await client.query(
-      `INSERT INTO maintenance (maintenanceDate, maintenanceType, maintenanceCost)
+      `INSERT INTO maintenance (maintenancedate, maintenancetype, maintenancecost)
        VALUES ($1, $2, $3)
-       RETURNING maintenanceId`,
-      [maintenanceDate, maintenanceType, maintenanceCost]
+       RETURNING maintenanceid`,
+      [maintenancedate, maintenancetype, maintenancecost]
     );
 
-    const maintenanceid = insertResult.rows[0].maintenanceId;
+    const maintenanceid = insertResult.rows[0].maintenanceid;
 
     await client.query(
-      `UPDATE cars SET maintenanceId = $1 WHERE carId = $2`,
-      [maintenanceid, carId]
+      `UPDATE cars SET maintenanceid = $1 WHERE carid = $2`,
+      [maintenanceid, carid]
     );
 
     await client.query('COMMIT');
@@ -39,22 +39,22 @@ export const createMaintenanceWithCarLink = async (carId, { maintenanceDate, mai
   }
 };
 
-export const updateMaintenanceWithCarCheck = async (maintenanceId, { maintenanceDate, maintenanceType, maintenanceCost }) => {
+export const updateMaintenanceWithCarCheck = async (maintenanceid, { maintenancedate, maintenancetype, maintenancecost }) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
     const updateResult = await client.query(
       `UPDATE maintenance
-       SET maintenanceDate = $1, maintenanceType = $2, maintenanceCost = $3
-       WHERE maintenanceId = $4
+       SET maintenancedate = $1, maintenancetype = $2, maintenancecost = $3
+       WHERE maintenanceid = $4
        RETURNING *`,
-      [maintenanceDate, maintenanceType, maintenanceCost, maintenanceId]
+      [maintenancedate, maintenancetype, maintenancecost, maintenanceid]
     );
 
     const carCheck = await client.query(
-      `SELECT carId FROM cars WHERE maintenanceId = $1`,
-      [maintenanceId]
+      `SELECT carid FROM cars WHERE maintenanceid = $1`,
+      [maintenanceid]
     );
 
     await client.query('COMMIT');
@@ -70,19 +70,19 @@ export const updateMaintenanceWithCarCheck = async (maintenanceId, { maintenance
   }
 };
 
-export const deleteMaintenanceAndUnlinkCar = async (maintenanceId) => {
+export const deleteMaintenanceAndUnlinkCar = async (maintenanceid) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
     await client.query(
-      `UPDATE cars SET maintenanceId = NULL WHERE maintenanceId = $1`,
-      [maintenanceId]
+      `UPDATE cars SET maintenanceid = NULL WHERE maintenanceid = $1`,
+      [maintenanceid]
     );
 
     const deleteResult = await client.query(
-      `DELETE FROM maintenance WHERE maintenanceId = $1 RETURNING *`,
-      [maintenanceId]
+      `DELETE FROM maintenance WHERE maintenanceid = $1 RETURNING *`,
+      [maintenanceid]
     );
 
     await client.query('COMMIT');

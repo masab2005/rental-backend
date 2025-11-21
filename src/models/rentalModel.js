@@ -11,7 +11,7 @@ export const createRentalService = async ({
   totalAmount
 }) => {
   const client = await pool.connect();
-
+ 
   try {
     await client.query("BEGIN");
 
@@ -215,4 +215,50 @@ export const getRequestedRentalsByUserService = async (userId) => {
   );
 
   return rows;
+};
+
+export const endRentalService = async (bookingId) => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // 1) Lock rental and car row
+    const { rows } = await client.query(
+      `SELECT r.carid, c.carstatus
+       FROM rentals r
+       JOIN cars c ON r.carid = c.carid
+       WHERE r.bookingid = $1
+       FOR UPDATE`,
+      [bookingId]
+    );
+
+    if (rows.length === 0) {
+      throw new Error("Rental not found");
+    }
+
+    const { carid, carstatus } = rows[0];
+    if (carstatus !== 'rented') {
+      throw new Error("Car is not currently rented");
+    }
+
+    // 2) Update car status back to 'available'
+    await client.query(
+      `UPDATE cars SET carstatus = 'available' WHERE carid = $1`,
+      [carid]
+    );
+
+    // 3) Optionally mark rental as completed (add a status column if needed)
+    await client.query(
+      `UPDATE rentals SET updated_at = NOW() WHERE bookingid = $1`,
+      [bookingId]
+    );
+
+    await client.query("COMMIT");
+    return { bookingId, carid, status: 'ended' };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
 };

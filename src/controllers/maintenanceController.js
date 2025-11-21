@@ -5,11 +5,11 @@ import {
   updateMaintenanceWithCarCheck,
   deleteMaintenanceAndUnlinkCar
 } from '../models/maintenanceModel.js';
-import handerResponse from '../utils/handerResponse.js';
+
 export const fetchAllMaintenance = async (req, res, next) => {
   try {
     const data = await getAllMaintenance();
-    res.status(200).json({ status: 200, message: 'All maintenance records retrieved', data });
+    res.status(200).json({ status: 200, message: 'Maintenance records retrieved', data });
   } catch (error) {
     next(error);
   }
@@ -27,8 +27,8 @@ export const fetchMaintenanceById = async (req, res, next) => {
 
 export const addMaintenance = async (req, res, next) => {
   try {
-    const { carId, maintenanceDate, maintenanceType, maintenanceCost } = req.body;
-    const result = await createMaintenanceWithCarLink(carId, { maintenanceDate, maintenanceType, maintenanceCost });
+    const { carid, maintenancedate, maintenancetype, maintenancecost } = req.body;
+    const result = await createMaintenanceWithCarLink(carid, { maintenancedate, maintenancetype, maintenancecost });
     res.status(201).json({ status: 201, message: 'Maintenance created and linked to car', data: result });
   } catch (error) {
     next(error);
@@ -37,8 +37,8 @@ export const addMaintenance = async (req, res, next) => {
 
 export const editMaintenance = async (req, res, next) => {
   try {
-    const { maintenanceDate, maintenanceType, maintenanceCost } = req.body;
-    const result = await updateMaintenanceWithCarCheck(req.params.id, { maintenanceDate, maintenanceType, maintenanceCost });
+    const { maintenancedate, maintenancetype, maintenancecost } = req.body;
+    const result = await updateMaintenanceWithCarCheck(req.params.id, { maintenancedate, maintenancetype, maintenancecost });
     if (!result.updated) return res.status(404).json({ message: 'Maintenance record not found' });
     res.status(200).json({ status: 200, message: 'Maintenance updated', data: result });
   } catch (error) {
