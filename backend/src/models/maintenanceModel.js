@@ -1,18 +1,12 @@
+import fs from 'fs';
 import pool from '../config/db.js';
 
+const sql = fs.readFileSync('./src/views/maintenance_with_cars.sql', 'utf8');
+await pool.query(sql);
+
 export const getAllMaintenance = async () => {
-  const result = await pool.query(`
-    SELECT 
-      m.maintenanceid,
-      m.maintenancedate,
-      m.maintenancetype,
-      m.maintenancecost,
-      c.carid AS "carId",
-      c.carmodel AS "carModel"
-    FROM maintenance m
-    JOIN cars c ON c.maintenanceid = m.maintenanceid
-    ORDER BY m.maintenancedate DESC
-  `);
+  const result = await pool.query('SELECT * FROM maintenance_with_cars');
+  return result.rows;
   return result.rows;
 };
 
